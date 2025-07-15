@@ -1,13 +1,14 @@
 require(`dotenv`).config({quite:true});
-const {Client , IntentsBitField } = require(`discord.js`);
+const {Client , GatewayIntentBits } = require(`discord.js`);
 const eventHandler = require("./handlers/eventHandler.js");
 
 
 const client = new Client({ 
 	intents: [
-		IntentsBitField.Flags.GuildMembers , 
-		IntentsBitField.Flags.GuildMessages , 
-		IntentsBitField.Flags.MessageContent,
+		GatewayIntentBits.Guilds,
+		GatewayIntentBits.GuildMessages , 
+		GatewayIntentBits.MessageContent,
+		GatewayIntentBits.GuildMembers , 
 	]
 });
 
