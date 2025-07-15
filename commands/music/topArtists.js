@@ -1,36 +1,37 @@
-const { spotify} = require(`../../spotify`);
-const redis = require(`../../redisClient`);
+const { spotify } = require(`../../spotify`);
+const db = require(`../../db`);
 
 module.exports = {
-    name:`top-artists`,
-    description:`Get your top spotify artists`,
-    callback: async (client , interaction)=>{
+  name: `top-artists`,
+  description: `Get your top Spotify artists`,
+  callback: async (client, interaction) => {
+    const userId = interaction.member.user.id;
 
-        let userId = interaction.member.user.id;
-        let token = await redis.get(userId);
+    db.query(`SELECT * FROM Token WHERE userId = ?`, [userId], async (err, results) => {
+      if (err) {
+        console.error(err);
+        return interaction.reply('Database error occurred.');
+      }
 
-        if (!token){
-            interaction.reply(`You are not logged in, please do /login to login`);
-            return;
-        }
-        
+      if (results.length === 0 || !results[0].accessToken) {
+        return interaction.reply('You are not logged in, please do /login to login.');
+      }
 
-         spotify.setAccessToken(token);
+      spotify.setAccessToken(results[0].accessToken);
 
-
-
-        let data = await  spotify.getMyTopArtists({
-            time_range:"long_term",
+      try {
+        const data = await spotify.getMyTopArtists({
+          time_range: 'long_term',
         });
-        let artists = data.body.items;
-        let artistNames = ``;
 
-        for (const artist of artists){
-            artistNames = artistNames + artist.name +`\n`;
-        }
-        
+        const artists = data.body.items;
+        let artistNames = artists.map((a) => a.name).join('\n') || 'No top artists found.';
+
         interaction.reply(artistNames);
-        
-
-    }
-}
+      } catch (err) {
+        console.error('Spotify API error:', err);
+        interaction.reply('Failed to fetch top artists. Please try again.');
+      }
+    });
+  },
+};

@@ -1,7 +1,8 @@
-require(`dotenv`).config({quite:true});
+require(`dotenv`).config({quiet:true});
 const SpotifyWebAPI = require(`spotify-web-api-node`);
 const express = require(`express`);
-const redis = require(`./redisClient`);
+const db = require(`./db`);
+
 
 const app =express();
 const spotify = new SpotifyWebAPI({
@@ -27,16 +28,20 @@ app.get(`/callback` , async(req,res)=>{
     const code = req.query.code;
     try {
         const data = await spotify.authorizationCodeGrant(code);
-        const state = req.query.state; // e.g., "discord_123456789"
-        const discordId = state.replace('discord_', '');
-
-        const { access_token , refresh_token } = data.body;
+        const state = req.query.state; 
+        const userId = state.replace('discord_', '');
+        const { access_token , refresh_token  , expires_in} = data.body;
         spotify.setAccessToken(access_token);
         spotify.setRefreshToken(refresh_token);
 
-        redis.set(discordId , access_token);
-
+        db.query(`insert into Token (userId,accessToken,refreshToken,expiryDate) values (?,?,?,?)` , [userId , access_token , refresh_token , Date.now()+expires_in*1000] , (err)=>{
+            if (err){
+                console.error(err);
+                return;
+            }
         res.status(200).send(`You have logged in succesfully`);
+        });
+
     } catch (error) {
         console.error(error);
     }
