@@ -19,6 +19,10 @@ app.get(`/login` , (req,res)=>{
     
 })
 
+app.get(`/logout ` , ()=>{
+    
+})
+
 app.get(`/callback` , async(req,res)=>{
     const code = req.query.code;
     try {

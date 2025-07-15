@@ -21,6 +21,7 @@ module.exports = {
         }
 
         const scopes = ['user-read-private', 'user-top-read', 'user-read-email'];
+        let userId = interaction.member.user.id;
     const state = `discord_${userId}`;
     const authUrl = spotifyApi.createAuthorizeURL(scopes, state);
 

@@ -6,7 +6,7 @@ redis.on('error', (err) => console.log('Redis Client Error', err));
 
 (async ()=>{
 
-await redis.connect();
+await redis.connect()
 })();
 
 
