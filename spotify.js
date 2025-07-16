@@ -9,6 +9,4 @@ const spotify = new SpotifyWebAPI({
 });
 
 
-
-
-module.exports = {spotify}
+module.exports = {spotify};

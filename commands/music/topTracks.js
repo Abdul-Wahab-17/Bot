@@ -7,17 +7,24 @@ module.exports = {
   callback: async (client, interaction) => {
     const userId = interaction.member.user.id;
 
-    db.query(`SELECT * FROM Token WHERE userId = ?`, [userId], async (err, results) => {
+    db.query(`SELECT * FROM Token WHERE userId = ?`, [userId], async (err, result) => {
       if (err) {
         console.error(err);
         return interaction.reply('Database error occurred.');
       }
 
-      if (results.length === 0 || !results[0].accessToken) {
+      if (result.length === 0 || !result[0].accessToken) {
         return interaction.reply('You are not logged in, please do /login to login.');
       }
 
-      spotify.setAccessToken(results[0].accessToken);
+            const expiryDate = parseInt(result[0].expiryDate);
+            const now = Date.now();
+      
+            if (now >= expiryDate) {
+              token = await refreshToken(userId , result[0].refreshToken);
+            }
+
+      spotify.setAccessToken(result[0].accessToken);
 
       try {
         const data = await spotify.getMyTopTracks({
